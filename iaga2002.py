@@ -129,11 +129,9 @@ def main():
     # Add network code to all traces
     for trace in stream:
         trace.stats.network = args.network
-        print trace.data.dtype
     # Can not write masked array
     stream = stream.split()
     stream.write(output, format='MSEED', reclen=512, encoding='FLOAT32')
-    print stream
     return 0
 
 if __name__ == "__main__":

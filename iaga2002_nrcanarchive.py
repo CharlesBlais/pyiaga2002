@@ -21,6 +21,20 @@ import sys
 import iaga2002
 import gzip
 
+import errno    
+import os
+
+
+def mkdir_p(path):
+    '''Make directory recursive'''
+    try:
+        os.makedirs(path)
+    except OSError as exc:  # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise
+
 def get_nrcan_archive_filename(trace, directory=''):
     '''See description'''
     return os.path.join(
@@ -48,6 +62,7 @@ def main():
     args = parser.parse_args()
 
     for root, subdirs, files in os.walk(args.directory):
+        subdirs = subdirs
         for filename in files:
             if filename.endswith(".min.gz") or filename.endswith(".sec.gz"):
                 fptr = gzip.open(os.path.join(root, filename), 'rb')
@@ -60,7 +75,7 @@ def main():
             for trace in stream:
                 trace.stats.network = args.network
                 output = get_nrcan_archive_filename(trace, args.output)
-                print output
+                mkdir_p(os.path.dirname(output))
                 trace.write(output, format='MSEED', reclen=512, encoding='FLOAT32')
 
 

@@ -75,6 +75,8 @@ def main():
             for trace in stream:
                 trace.stats.network = args.network
                 output = get_nrcan_archive_filename(trace, args.output)
+                # MiniSeed can not store masked values
+                trace.split()
                 mkdir_p(os.path.dirname(output))
                 trace.write(output, format='MSEED', reclen=512, encoding='FLOAT32')
 

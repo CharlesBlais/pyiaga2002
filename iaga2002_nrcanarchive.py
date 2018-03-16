@@ -78,6 +78,7 @@ def main():
                 # MiniSeed can not store masked values
                 trace = trace.split()
                 mkdir_p(os.path.dirname(output))
+                print output
                 trace.write(output, format='MSEED', reclen=512, encoding='FLOAT32')
 
 

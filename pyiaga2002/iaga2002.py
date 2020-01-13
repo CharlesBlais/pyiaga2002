@@ -1,31 +1,11 @@
 #!/usr/bin/env python
-'''
-Convert IAGA2002 file to miniSeed.
-
-Not trying to be fancy at all in this code since this is only used
-by operations to store IAGA2002 into miniSeed archive.  I don't expect
-anyone using this for other purposes as it should be the other way around.
-
-Information read from IAGA2002 header for miniSeed:
-    network code = set by command line
-    station code = IAGA CODE header
-    location = Data Type header = (D0) definitive, (R0) all others
-    channel =
-       1. convert the delta to SEED code
-       2. F
-       3. orientation code (last element of column header)
-    starttime = first time in data
-    delta = difference between first and second time
-
-:author: Charles Blais
-'''
 import sys
 from obspy import Stream, Trace, UTCDateTime
 from obspy.core.trace import Stats
 import numpy as np
 
 # User-contribute
-import seed
+import pyiaga2002.seed as seed
 
 class IAGA2002FormatError(Exception):
     pass
@@ -77,7 +57,7 @@ def read(filename):
         # this is the header before data so we stop here
         if line.startswith('DATE'):
             components = _get_components(line)
-            for idx in xrange(len(stream)):
+            for idx in range(len(stream)):
                 stream[idx].stats.channel = 'UF' + components[idx]
             break
 
@@ -101,7 +81,7 @@ def read(filename):
             for trace in stream:
                 trace.stats.starttime = starttime
         # append the data to each stream
-        for idx in xrange(len(stream)):
+        for idx in range(len(stream)):
             stream[idx].data = np.append(stream[idx].data, np.array([float(data[idx+3])], dtype=np.float32))
     for trace in stream:
         if 99999 in trace.data:
@@ -110,29 +90,3 @@ def read(filename):
     if isinstance(filename, str):
         fptr.close()
     return stream
-            
-
-def main():
-    '''Main routine'''
-    import argparse
-    
-    parser = argparse.ArgumentParser(description='Read IAGA2002 file as miniSeed')
-    parser.add_argument('filename', help='IAGA2002 file to convert')
-    parser.add_argument('--output', default=None, help='Output file (default: [filename].mseed)')
-    parser.add_argument('--network', default='C2', help='Network code (default: C2)')
-    args = parser.parse_args()
-
-    # Set default filename
-    output = args.output if args.output is not None else args.filename + '.mseed'
-
-    stream = read(args.filename)
-    # Add network code to all traces
-    for trace in stream:
-        trace.stats.network = args.network
-    # Can not write masked array
-    stream = stream.split()
-    stream.write(output, format='MSEED', reclen=512, encoding='FLOAT32')
-    return 0
-
-if __name__ == "__main__":
-    sys.exit(main())

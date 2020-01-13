@@ -1,1 +1,10 @@
+# Ignore python compile code
 *pyc
+
+# Ignore visual studio code
+.vscode
+
+# Ignore setup.py build information
+*egg-info
+/dist/
+/build/

@@ -47,7 +47,7 @@ def read(filename):
     ddelta = stream[0].stats.delta
 
     for line in fptr:
-        line = line.strip()
+        line = line.decode('utf-8').strip()
         if line.startswith('IAGA CODE'):
             for trace in stream:
                 trace.stats.station = _get_station(line)
@@ -65,7 +65,7 @@ def read(filename):
     # Example of line:
     #   2014-12-01 00:00:00.000 335      1375.02  -2365.15  56033.84  99999.00
     for line in fptr:
-        data = line.split()
+        data = line.decode('utf-8').split()
         if len(data) != 7:
             raise IAGA2002FormatError("The following line is incomplete, aborting: %s" % line)
         # always the second line (we can calculate the delta and its associated SEED code)

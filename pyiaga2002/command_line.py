@@ -136,7 +136,16 @@ def iaga2mseed():
     output = args.output if args.output is not None else args.filename + '.mseed'
 
     logging.info("Reading content of %s", args.filename)
-    stream = read(args.filename)
+    if args.filename.endswith(".min.gz") or args.filename.endswith(".sec.gz"):
+        fptr = gzip.open(args.filename, 'rb')
+        stream = iaga2002.read(fptr)
+        fptr.close()
+    elif args.filename.endswith(".min") or args.filename.endswith(".sec"):
+        stream = iaga2002.read(args.filename)
+    else:
+        logging.error("Unknown filename format %s", args.filename)
+        return 1
+
     # Add network code to all traces
     for trace in stream:
         trace.stats.network = args.network

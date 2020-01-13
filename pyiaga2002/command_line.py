@@ -46,8 +46,8 @@ def __is_empty(trace):
     if len(trace) == 0:
         logging.warning("Trace %s is empty, ignoring...", trace.get_id())
         return True
-    if numpy.ma.is_masked(trace):
-        if trace.all() is numpy.ma.masked:
+    if numpy.ma.is_masked(trace.data):
+        if trace.data.all() is numpy.ma.masked:
             logging.warning("Trace %s is empty, ignoring...", trace.get_id())
             return True
     return False
@@ -163,6 +163,7 @@ def iaga2mseed():
 
     # Add network code to all traces
     for trace in stream:
+        __is_empty(trace)
         trace.stats.network = args.network
 
     # Can not write masked array

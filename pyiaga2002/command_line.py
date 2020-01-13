@@ -8,6 +8,7 @@ import os
 import logging
 
 from obspy import read
+import numpy
 
 import pyiaga2002.iaga2002 as iaga2002
 
@@ -37,6 +38,20 @@ def __get_nrcan_archive_filename(trace, directory=''):
             channel = trace.stats.channel
         )
     )
+
+
+def __is_empty(trace):
+    '''
+    Determine if the trace is empty
+    '''
+    if len(trace) == 0:
+        logging.warning("Trace %s is empty, ignoring...", trace.get_id())
+        return True
+    if numpy.ma.is_masked(trace):
+        if trace.all() is np.ma.masked:
+            logging.warning("Trace %s is empty, ignoring...", trace.get_id())
+            return True
+    return False
 
 
 def iaga2archive():
@@ -84,12 +99,13 @@ def iaga2archive():
                 logging.warning("Unknown filename format %s", filename)
                 continue
             for trace in stream:
+                # Don't do anything if empty
+                if __is_empty(trace):
+                    continue
                 trace.stats.network = args.network
                 output = __get_nrcan_archive_filename(trace, args.output)
                 # MiniSeed can not store masked values
                 trace = trace.split()
-                if len(trace):
-                    logging.warning("Trace %s is empty, ignoring...", trace.get_id())
                 __mkdir_p(os.path.dirname(output))
                 logging.info("Writing converted IAGA2002 to %s", output)
                 trace.write(output, format='MSEED', reclen=512, encoding='FLOAT32')
@@ -149,6 +165,7 @@ def iaga2mseed():
     # Add network code to all traces
     for trace in stream:
         trace.stats.network = args.network
+        
     # Can not write masked array
     stream = stream.split()
     logging.info("Writing converted IAGA2002 to %s", output)

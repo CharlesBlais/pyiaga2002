@@ -48,7 +48,11 @@ def read(filename):
     ddelta = stream[0].stats.delta
 
     for line in fptr:
-        line = line.decode('utf-8').strip()
+        try:
+            line = line.decode('utf-8')
+        except (UnicodeDecodeError, AttributeError):
+            pass
+        line = line.strip()
         if line.startswith('IAGA CODE'):
             for trace in stream:
                 trace.stats.station = _get_station(line)
@@ -66,10 +70,12 @@ def read(filename):
     # Example of line:
     #   2014-12-01 00:00:00.000 335      1375.02  -2365.15  56033.84  99999.00
     for line in fptr:
-        data = line.decode('utf-8')
+        try:
+            line = line.decode('utf-8')
+        except (UnicodeDecodeError, AttributeError):
+            pass
         # if the data line contains stars (*) replace with 99999.00
-        data = re.sub(r'[*]+', '99999.00', data)
-        data = data.split()
+        data = re.sub(r'[*]+', '99999.00', line).split()
         
         if len(data) != 7:
             raise IAGA2002FormatError("The following line is incomplete, aborting: %s" % line)

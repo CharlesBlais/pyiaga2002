@@ -71,7 +71,7 @@ def iaga2archive():
     CCC = channel code
     '''
     parser = argparse.ArgumentParser(description='Read IAGA2002 directory structure and convert to miniSeed into NRCan archive')
-    parser.add_argument('directory', help='IAGA2002 archive directory')
+    parser.add_argument('directory', nargs='+', help='IAGA2002 archive directory')
     parser.add_argument('--output', default=os.getcwd(), help='Output base directory (default: [filename].mseed)')
     parser.add_argument('--network', default='C2', help='Network code (default: C2)')
     parser.add_argument('-v', '--verbose', action='store_true', help='Verbosity')
@@ -84,30 +84,31 @@ def iaga2archive():
         datefmt="%Y-%m-%d %H:%M:%S",
         level=logging.INFO if args.verbose else logging.WARNING)
 
-    for root, subdirs, files in os.walk(args.directory):
-        subdirs = subdirs
-        for filename in files:
-            logging.info("Reading content of %s", filename)
-            if filename.endswith(".min.gz") or filename.endswith(".sec.gz"):
-                fptr = gzip.open(os.path.join(root, filename), 'rb')
-                stream = iaga2002.read(fptr)
-                fptr.close()
-            elif filename.endswith(".min") or filename.endswith(".sec"):
-                stream = iaga2002.read(os.path.join(root, filename))
-            else:
-                logging.warning("Unknown filename format %s", filename)
-                continue
-            for trace in stream:
-                # Don't do anything if empty
-                if __is_empty(trace):
+    for directory in args.directory:
+        for root, subdirs, files in os.walk(directory):
+            subdirs = subdirs
+            for filename in files:
+                logging.info("Reading content of %s", filename)
+                if filename.endswith(".min.gz") or filename.endswith(".sec.gz"):
+                    fptr = gzip.open(os.path.join(root, filename), 'rb')
+                    stream = iaga2002.read(fptr)
+                    fptr.close()
+                elif filename.endswith(".min") or filename.endswith(".sec"):
+                    stream = iaga2002.read(os.path.join(root, filename))
+                else:
+                    logging.warning("Unknown filename format %s", filename)
                     continue
-                trace.stats.network = args.network
-                output = __get_nrcan_archive_filename(trace, args.output)
-                # MiniSeed can not store masked values
-                trace = trace.split()
-                __mkdir_p(os.path.dirname(output))
-                logging.info("Writing converted IAGA2002 to %s", output)
-                trace.write(output, format='MSEED', reclen=512, encoding='FLOAT32')
+                for trace in stream:
+                    # Don't do anything if empty
+                    if __is_empty(trace):
+                        continue
+                    trace.stats.network = args.network
+                    output = __get_nrcan_archive_filename(trace, args.output)
+                    # MiniSeed can not store masked values
+                    trace = trace.split()
+                    __mkdir_p(os.path.dirname(output))
+                    logging.info("Writing converted IAGA2002 to %s", output)
+                    trace.write(output, format='MSEED', reclen=512, encoding='FLOAT32')
 
 
 def iaga2mseed():

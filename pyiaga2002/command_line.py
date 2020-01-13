@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import os
 import sys
 import argparse
@@ -48,7 +47,7 @@ def __is_empty(trace):
         logging.warning("Trace %s is empty, ignoring...", trace.get_id())
         return True
     if numpy.ma.is_masked(trace):
-        if trace.all() is np.ma.masked:
+        if trace.all() is numpy.ma.masked:
             logging.warning("Trace %s is empty, ignoring...", trace.get_id())
             return True
     return False
@@ -165,7 +164,7 @@ def iaga2mseed():
     # Add network code to all traces
     for trace in stream:
         trace.stats.network = args.network
-        
+
     # Can not write masked array
     stream = stream.split()
     logging.info("Writing converted IAGA2002 to %s", output)

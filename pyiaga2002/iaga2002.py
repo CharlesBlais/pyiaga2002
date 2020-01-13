@@ -1,5 +1,6 @@
-#!/usr/bin/env python
 import sys
+import re
+
 from obspy import Stream, Trace, UTCDateTime
 from obspy.core.trace import Stats
 import numpy as np
@@ -65,7 +66,11 @@ def read(filename):
     # Example of line:
     #   2014-12-01 00:00:00.000 335      1375.02  -2365.15  56033.84  99999.00
     for line in fptr:
-        data = line.decode('utf-8').split()
+        data = line.decode('utf-8')
+        # if the data line contains stars (*) replace with 99999.00
+        data = re.sub(r'[*]+', '99999.00', data)
+        data = data.split()
+        
         if len(data) != 7:
             raise IAGA2002FormatError("The following line is incomplete, aborting: %s" % line)
         # always the second line (we can calculate the delta and its associated SEED code)

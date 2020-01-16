@@ -130,7 +130,7 @@ setup(
     #   py_modules=["my_module"],
     #
     packages=find_packages(exclude=['docs']),
-    #packages=find_packages(exclude=['contrib', 'docs', 'tests']),  # Required
+    # packages=find_packages(exclude=['contrib', 'docs', 'tests']),  # Required
 
     # This field lists other packages that your project depends on to run.
     # Any package you put here will be installed by pip when your project is
@@ -152,9 +152,9 @@ setup(
     # Similar to `install_requires` above, these must be valid existing
     # projects.
 
-    #extras_require={  # Optional
+    # extras_require={  # Optional
     #    'dev': ['pytest'],
-    #},
+    # },
 
     # If there are data files included in your packages that need to be
     # installed, specify them here.
@@ -170,7 +170,7 @@ setup(
     # http://docs.python.org/3.4/distutils/setupscript.html#installing-additional-files
     #
     # In this case, 'data_file' will be installed into '<sys.prefix>/my_data'
-    #data_files=[('my_data', ['data/data_file'])],  # Optional
+    # data_files=[('my_data', ['data/data_file'])],  # Optional
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
@@ -195,10 +195,10 @@ setup(
     # issues, where the source is hosted, where to say thanks to the package
     # maintainers, and where to support the project financially. The key is
     # what's used to render the link text on PyPI.
-    #project_urls={  # Optional
+    # project_urls={  # Optional
     #    'Bug Reports': 'https://github.com/pypa/sampleproject/issues',
     #    'Funding': 'https://donate.pypi.org',
     #    'Say Thanks!': 'http://saythanks.io/to/example',
     #    'Source': 'https://github.com/pypa/sampleproject/',
-    #},
+    # },
 )

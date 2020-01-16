@@ -2,12 +2,12 @@
 author: Charles Blais
 '''
 
-# Custom errors
+
 class SeedError(Exception):
     '''Seed Exception Class'''
     pass
 
-# pylint: disable=R0911
+
 def get_bandcode(sampling_rate, corner_period=None):
     '''
     Convert the sampling rate (hz) to its respective band code

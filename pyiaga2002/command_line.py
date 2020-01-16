@@ -2,7 +2,7 @@ import os
 import sys
 import argparse
 import gzip
-import errno    
+import errno
 import os
 import logging
 
@@ -22,6 +22,7 @@ def __mkdir_p(path):
         else:
             raise
 
+
 def __get_nrcan_archive_filename(trace, directory=''):
     '''See description'''
     return os.path.join(
@@ -30,11 +31,11 @@ def __get_nrcan_archive_filename(trace, directory=''):
         trace.stats.starttime.strftime("%m"),
         trace.stats.starttime.strftime("%d"),
         "{timestamp}.{network}.{station}.{location}.{channel}.mseed".format(
-            timestamp = trace.stats.starttime.strftime("%Y%m%d"),
-            network = trace.stats.network,
-            station = trace.stats.station,
-            location = trace.stats.location,
-            channel = trace.stats.channel
+            timestamp=trace.stats.starttime.strftime("%Y%m%d"),
+            network=trace.stats.network,
+            station=trace.stats.station,
+            location=trace.stats.location,
+            channel=trace.stats.channel
         )
     )
 
@@ -91,10 +92,19 @@ def iaga2archive():
                 logging.info("Reading content of %s", filename)
                 if filename.endswith(".min.gz") or filename.endswith(".sec.gz"):
                     fptr = gzip.open(os.path.join(root, filename), 'rb')
-                    stream = iaga2002.read(fptr)
+                    try:
+                        stream = iaga2002.read(fptr)
+                    except iaga2002.IAGA2002FormatError as err:
+                        logging.error(str(err))
+                        fptr.close()
+                        continue
                     fptr.close()
                 elif filename.endswith(".min") or filename.endswith(".sec"):
-                    stream = iaga2002.read(os.path.join(root, filename))
+                    try:
+                        stream = iaga2002.read(os.path.join(root, filename))
+                    except iaga2002.IAGA2002FormatError as err:
+                        logging.error(str(err))
+                        continue
                 else:
                     logging.warning("Unknown filename format %s", filename)
                     continue
@@ -133,7 +143,7 @@ def iaga2mseed():
     :author: Charles Blais
     '''
     import argparse
-    
+
     parser = argparse.ArgumentParser(description='Read IAGA2002 file as miniSeed')
     parser.add_argument('filename', help='IAGA2002 file to convert')
     parser.add_argument('--output', default=None, help='Output file (default: [filename].mseed)')

@@ -1,5 +1,6 @@
 import sys
 import re
+import logging
 
 from obspy import Stream, Trace, UTCDateTime
 from obspy.core.trace import Stats
@@ -81,7 +82,8 @@ def read(filename):
         data = re.sub(r'[*]+', '99999.00', line).split()
 
         if len(data) != 7:
-            raise IAGA2002FormatError("The following line is incomplete, aborting: %s" % line)
+            logging.warning("The following line is incomplete, skip: %s" % line)
+            continue
         # always the second line (we can calculate the delta and its associated SEED code)
         if stream[0].stats.starttime != dstarttime and stream[0].stats.delta == ddelta:
             delta = UTCDateTime("{0} {1}".format(*data)) - stream[0].stats.starttime

@@ -111,7 +111,7 @@ into NRCan archive')
             subdirs = subdirs
             for filename in files:
                 try:
-                    stream = iaga2002.read(filename)
+                    stream = iaga2002.read(os.path.join(root, filename))
                 except iaga2002.IAGA2002FormatError as err:
                     logging.error(str(err))
                     continue

@@ -74,7 +74,7 @@ setup(
     #
     # This field corresponds to the "Home-Page" metadata field:
     # https://packaging.python.org/specifications/core-metadata/#home-page-optional
-    url='http://bitbucket.seismo.nrcan.gc.ca/projects/UT/repos/geomag-iaga2002-mseed/browse',  # Optional
+    url='http://bitbucket.seismo.nrcan.gc.ca/',  # Optional
 
     # This should be your name or the name of the organization which owns the
     # project.
@@ -152,9 +152,12 @@ setup(
     # Similar to `install_requires` above, these must be valid existing
     # projects.
 
-    # extras_require={  # Optional
-    #    'dev': ['pytest'],
-    # },
+    extras_require={  # Optional
+        'dev': [
+            'pytest',
+            'flake8',
+        ],
+    },
 
     # If there are data files included in your packages that need to be
     # installed, specify them here.

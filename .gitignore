@@ -4,6 +4,9 @@
 # Ignore visual studio code
 .vscode
 
+# Ignore mypy
+.mypy_cache
+
 # Ignore setup.py build information
 *egg-info
 /dist/

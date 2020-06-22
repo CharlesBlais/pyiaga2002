@@ -113,8 +113,7 @@ def read(filename: Union[str, TextIO]) -> Stream:
                 np.array([float(data[idx+3])], dtype=np.float32))
 
     for trace in stream:
-        if 99999 in trace.data:
-            trace.data = np.ma.masked_values(trace.data, 99999.0)
+        trace.data = np.ma.masked_where(trace.data >= 88888, trace.data)
 
     if isinstance(filename, str):
         fptr.close()

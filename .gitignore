@@ -11,3 +11,10 @@
 *egg-info
 /dist/
 /build/
+
+# Ignore venv
+venv
+env
+
+# Ignore coverage results
+.coverage

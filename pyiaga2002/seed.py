@@ -1,5 +1,12 @@
 '''
-author: Charles Blais
+MiniSeed Library
+================
+
+SEED convention handler as descirbed in the SEED Manual
+
+http://www.fdsn.org/seed_manual/SEEDManual_V2.4_Appendix-A.pdf
+
+:author: Charles Blais
 '''
 from typing import SupportsFloat
 
@@ -15,7 +22,9 @@ def get_bandcode(
 ) -> str:
     '''
     Convert the sampling rate (hz) to its respective band code
-    See Appendix A of the Seed documentation
+    See Appendix A of the Seed documentation.
+
+    http://www.fdsn.org/seed_manual/SEEDManual_V2.4_Appendix-A.pdf
 
     :param sampling_rate: sampling rate in Hz
     :param corner_period: corner period used to determine bandcode

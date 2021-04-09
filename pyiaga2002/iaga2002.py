@@ -1,4 +1,9 @@
 """
+IAGA2002 library
+================
+
+Library for reading IAGA2002 files
+
 ..  codeauthor:: Charles Blais
 """
 import re
@@ -15,46 +20,84 @@ import pyiaga2002.seed as seed
 
 
 class IAGA2002FormatError(Exception):
+    """Custom error for IAGA2002 format"""
     pass
 
 
 def _get_station(line: str) -> str:
-    """Get station code from line"""
+    """Get station code from line
+
+    :param str line: line to parse station code
+    :rtype: str
+    :returns: station code
+    """
     return line[23:-1].strip()
 
 
 def _get_location(line: str) -> str:
-    """Get location code from line"""
-    return 'D0' if line[24:-1].strip() == 'definitive' else 'R0'
+    """Get location code from line
+
+    :param str line: line to parse location code
+    :rtype: str
+    :returns: location code
+    """
+    if line[24:-1].strip() == 'definitive':
+        return 'D0'
+    elif line[24:-1].strip() == 'quasi-definitive':
+        return 'Q0'
+    elif line[24:-1].strip() == 'provisional':
+        return 'A0'
+    return 'R0'
 
 
 def _get_components(line: str) -> List[str]:
-    """Get components from line (last characters of last 4 blocks)"""
+    """Get components from line (last characters of last 4 blocks)
+
+    :param str line: line to parse components
+    :rtype: [str]
+    :returns: components in code
+    """
     return [block[-1] for block in line.split()[-5:-1]]
 
 
-def read(filename: Union[str, TextIO]) -> Stream:
+def read(
+    filename: Union[str, TextIO],
+    dtype=np.float32,
+) -> Stream:
     """Read content of IAGA2002 into obspy Stream object
 
+    The sampling rate will be determined by the content of the stream.
+    The data type (for location) will be determined the header information.
+
+    The naming convention follows the one described under:
+
+    https://github.com/INTERMAGNET/miniseed-sncl/blob/master/SNCL.md
+
+    :type filename: str or resource
     :param filename: file of IAGA2002 data
 
-    :return: ~obspy.Stream
+    :param dtype: numpy dtype (default: np.float32)
+
+    :type: :class:`obspy.Stream`
+    :returns: IAGA2002 to miniseed
     """
     if isinstance(filename, str):
         logging.info(f'Reading content of {filename}')
         fptr = gzip.open(filename, 'r') \
             if filename.endswith('gz') \
             else open(filename)
-    else:
-        logging.info(f'Received resource, assuming it has read enabled')
+    elif hasattr(filename, 'read'):
+        logging.debug('Received resource')
         fptr = filename
+    else:
+        raise ValueError('Unknown content sent for IAGA2002 reading')
 
     # Set defaults
     stream = Stream([
-        Trace(np.array([], dtype=np.float32)),
-        Trace(np.array([], dtype=np.float32)),
-        Trace(np.array([], dtype=np.float32)),
-        Trace(np.array([], dtype=np.float32))
+        Trace(np.array([], dtype=dtype)),
+        Trace(np.array([], dtype=dtype)),
+        Trace(np.array([], dtype=dtype)),
+        Trace(np.array([], dtype=dtype))
     ])
 
     for line in fptr:
@@ -90,8 +133,17 @@ def read(filename: Union[str, TextIO]) -> Stream:
         if len(data) != 7:
             logging.warning(f'The following line is incomplete, skip: {line}')
             continue
+
+        # always the first line
+        if len(stream[0].data) == 0:
+            starttime = UTCDateTime("{0} {1}".format(*data))
+            for trace in stream:
+                trace.stats.starttime = starttime
+
         # always the second line
         # we can calculate the delta and its associated SEED code
+        # we do this since HEADER in IAGA-2002 is known to me innacurate for
+        # some institutes
         if len(stream[0].data) == 1:
             delta = UTCDateTime("{0} {1}".format(*data)) - \
                 stream[0].stats.starttime
@@ -101,17 +153,14 @@ def read(filename: Union[str, TextIO]) -> Stream:
             for trace in stream:
                 trace.stats.delta = delta
                 trace.stats.channel = seedcode + trace.stats.channel[1:]
-        # always the first line
-        if len(stream[0].data) == 0:
-            starttime = UTCDateTime("{0} {1}".format(*data))
-            for trace in stream:
-                trace.stats.starttime = starttime
+
         # append the data to each stream
         for idx in range(len(stream)):
             stream[idx].data = np.append(
                 stream[idx].data,
                 np.array([float(data[idx+3])], dtype=np.float32))
 
+    # Mask any invalid data
     for trace in stream:
         trace.data = np.ma.masked_where(trace.data >= 88888, trace.data)
 
